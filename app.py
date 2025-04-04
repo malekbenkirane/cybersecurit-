@@ -195,7 +195,7 @@ def send_email_route():
         recipient_name = request.form.get("recipient_name")
         
         if recipient_email and recipient_name:
-            phishing_link = "https://cybersecurit-qx4s.onrender.com  # Lien de phishing
+            phishing_link = "https://cybersecurit-qx4s.onrender.com"  # Lien de phishing
             send_email(recipient_email, recipient_name, phishing_link)
             return f"Email envoyé à {recipient_name} ({recipient_email}) avec succès !"
 

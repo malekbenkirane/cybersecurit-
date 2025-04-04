@@ -1,0 +1,6 @@
+Flask
+flask_sqlalchemy
+gunicorn==23.0.0
+fpdf
+matplotlib==3.4.3
+matplotlib --no-binary :all:

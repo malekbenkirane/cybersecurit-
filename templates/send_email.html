@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Envoyer un Email de Phishing</title>
+    <!-- Lien vers le fichier CSS dans le dossier static -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h2>Envoyer un Email de Phishing</h2>
+
+    <!-- Formulaire pour envoyer un email à un seul destinataire -->
+    <h3>Envoyer à un seul employé :</h3>
+    <form action="/send_email" method="POST">
+        <label for="recipient_email">Email de l'Employé :</label>
+        <input type="email" id="recipient_email" name="recipient_email" required>
+        <br><br>
+        <label for="recipient_name">Nom de l'Employé :</label>
+        <input type="text" id="recipient_name" name="recipient_name" required>
+        <br><br>
+        <button type="submit">Envoyer l'Email</button>
+    </form>
+
+    <hr>
+
+    <!-- Formulaire pour télécharger un fichier CSV -->
+    <h3>Envoyer à plusieurs employés à partir d'un fichier CSV :</h3>
+    <form action="/send_email" method="POST" enctype="multipart/form-data">
+        <label for="csv_file">Choisir un fichier CSV :</label>
+        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+        <br><br>
+        <button type="submit">Envoyer les Emails</button>
+    </form>
+</body>
+</html>
+

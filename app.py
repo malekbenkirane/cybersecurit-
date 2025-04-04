@@ -45,7 +45,7 @@ SENDER_PASSWORD = "Saouda2025!!"
 def send_email(recipient_email, recipient_name, phishing_link):
 
     # Construire le lien de phishing avec le tracking du clic
-    phishing_link = f"https://outlook-regence.onrender.com/track_open?email={urllib.parse.quote(recipient_email)}&next=https://outlook-regence.onrender.com/"
+    phishing_link = f"https://cybersecurit-qx4s.onrender.com/track_open?email={urllib.parse.quote(recipient_email)}&next=https://cybersecurit-qx4s.onrender.com/"
 
     email_content = f"""
     <html>
@@ -178,7 +178,7 @@ def send_email_route():
                     next(reader)  # Ignorer l'entête du fichier CSV
 
                     # Envoi des emails de phishing à chaque destinataire
-                    phishing_link = "https://outlook-regence.onrender.com"  # Lien de phishing
+                    phishing_link = "https://cybersecurit-qx4s.onrender.com"  # Lien de phishing
                     for row in reader:
                         if len(row) >= 2:  # Vérifier qu'il y a au moins un email et un nom
                             recipient_email = row[0].strip()
@@ -195,7 +195,7 @@ def send_email_route():
         recipient_name = request.form.get("recipient_name")
         
         if recipient_email and recipient_name:
-            phishing_link = "https://outlook-regence.onrender.com"  # Lien de phishing
+            phishing_link = "https://cybersecurit-qx4s.onrender.com  # Lien de phishing
             send_email(recipient_email, recipient_name, phishing_link)
             return f"Email envoyé à {recipient_name} ({recipient_email}) avec succès !"
 

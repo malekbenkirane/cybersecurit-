@@ -15,7 +15,7 @@
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
     <div class="container mx-auto my-8 p-8 bg-white dark:bg-gray-800 shadow-xl rounded-xl">
         <div class="relative">
-            <!-- Bouton PDF repositionné à droite -->
+            <!-- Boutons PDF et réinitialisation -->
             <button id="generate-pdf"
                 class="absolute top-0 left-0 mt-4 mr-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
                 <i class="fa fa-file-pdf mr-2"></i>Générer PDF
@@ -55,7 +55,7 @@
             <canvas id="emailChart" width="400" height="200"></canvas>
         </div>
 
-        <!-- Graphique circulaire avec taille ajustée et pourcentage -->
+        <!-- Graphique circulaire -->
         <div class="mb-8">
             <canvas id="clickPie" width="250" height="250"></canvas>
         </div>
@@ -120,7 +120,6 @@
                 <li><strong>Phishing simulé :</strong> Organisez des tests de phishing réguliers pour évaluer le niveau de sensibilisation des employés.</li>
             </ul>
         </div>
-
     </div>
 
     <script>
@@ -251,13 +250,15 @@
             fetch("/get_stats")
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('emails-envoyes').innerText = data.sent;
-                    document.getElementById('emails-ouverts').innerText = data.clicked;
-                    document.getElementById('identifiants-captures').innerText = data.submitted;
-                    emailChart.data.datasets[0].data = [data.sent, data.clicked, data.submitted];
+                    document.getElementById('emails-envoyes').innerText = data.total_sent;
+                    document.getElementById('emails-ouverts').innerText = data.total_clicked;
+                    document.getElementById('identifiants-captures').innerText = data.total_submitted;
+                    emailChart.data.datasets[0].data = [data.total_sent, data.total_clicked, data.total_submitted];
                     emailChart.update();
+                    pieChart.data.datasets[0].data = [100 - data.click_rate, data.click_rate];
+                    pieChart.update();
                 });
-        }, 5000);  // Rafraîchissement des stats toutes les 5 secondes
+        }, 30000); // Mettez à jour toutes les 30 secondes
     </script>
 </body>
 

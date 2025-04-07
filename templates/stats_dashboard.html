@@ -7,6 +7,7 @@
     <title>Tableau de Bord - Statistiques Phishing</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 </head>
@@ -54,7 +55,7 @@
             <canvas id="emailChart" width="400" height="200"></canvas>
         </div>
 
-        <!-- Graphique circulaire avec taille ajustée -->
+        <!-- Graphique circulaire avec taille ajustée et pourcentage -->
         <div class="mb-8">
             <canvas id="clickPie" width="250" height="250"></canvas>
         </div>
@@ -155,7 +156,7 @@
             }
         });
 
-        // Graphique circulaire (réajusté)
+        // Graphique circulaire (réajusté avec pourcentage)
         const pieCtx = document.getElementById('clickPie').getContext('2d');
         const clickRate = {{ total_clicked }} / {{ total_sent }} * 100;
         const pieChart = new Chart(pieCtx, {
@@ -164,13 +165,40 @@
                 labels: ['Non cliqués', 'Cliqués'],
                 datasets: [{
                     data: [100 - clickRate, clickRate],
-                    backgroundColor: ['#D1D5DB', '#F59E0B']
+                    backgroundColor: ['#D1D5DB', '#F59E0B'],
+                    borderColor: ['#F57C00', '#F59E0B']
                 }]
             },
             options: {
                 animation: {
                     animateRotate: true,
                     animateScale: true
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                let percentage = tooltipItem.raw.toFixed(2) + '%';
+                                return tooltipItem.label + ': ' + percentage;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: function(value, ctx) {
+                            let sum = 0;
+                            let dataArr = ctx.chart.data.datasets[0].data;
+                            dataArr.map(data => {
+                                sum += data;
+                            });
+                            let percentage = (value / sum * 100).toFixed(2) + '%';
+                            return percentage;
+                        },
+                        color: 'white',
+                        font: {
+                            weight: 'bold',
+                            size: 16
+                        }
+                    }
                 }
             }
         });
@@ -217,9 +245,9 @@
                     document.getElementById('identifiants-captures').innerText = data.submitted;
                     emailChart.data.datasets[0].data = [data.sent, data.clicked, data.submitted];
                     emailChart.update();
-                })
-                .catch(error => console.error("Erreur de mise à jour :", error));
-        }, 5000);
+                });
+        }, 5000);  // Rafraîchissement des stats toutes les 5 secondes
     </script>
 </body>
+
 </html>

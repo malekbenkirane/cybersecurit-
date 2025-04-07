@@ -235,6 +235,10 @@ def stats_dashboard():
     total_clicked = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="lien cliqué").scalar() or 0
     total_submitted = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="formulaire soumis").scalar() or 0
 
+    # Calculer les taux globaux en évitant la division par zéro
+    click_rate_global = (total_clicked / total_sent * 100) if total_sent > 0 else 0
+    submit_rate_global = (total_submitted / total_sent * 100) if total_sent > 0 else 0
+
     # Récupérer les stats par utilisateur
     user_stats = db.session.query(
         Interaction.email,
@@ -277,8 +281,10 @@ def stats_dashboard():
                            total_sent=total_sent, 
                            total_clicked=total_clicked, 
                            total_submitted=total_submitted,
-                           user_data=user_data,
-                           user_stats=user_stats)
+                           click_rate_global=round(click_rate_global, 2),
+                           submit_rate_global=round(submit_rate_global, 2),
+                           user_data=user_data)
+
 @app.template_filter('date')
 def date_filter(value, format='%d/%m/%Y %H:%M'):
     if isinstance(value, datetime):

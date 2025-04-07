@@ -58,14 +58,14 @@
                 <h3 class="text-xl font-semibold text-green-600 dark:text-white flex items-center">
                     <i class="fa fa-chart-pie mr-2 text-green-500"></i>Taux de clics global
                 </h3>
-                <p id="taux-clic" class="text-3xl font-bold">{{ click_rate }}%</p>
+                <p id="taux-clic" class="text-3xl font-bold">{{ click_rate_global }}%</p>
             </div>
             <!-- Taux de soumission global -->
             <div class="p-6 bg-blue-50 dark:bg-blue-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
                 <h3 class="text-xl font-semibold text-blue-600 dark:text-white flex items-center">
                     <i class="fa fa-chart-line mr-2 text-blue-500"></i>Taux de soumission global
                 </h3>
-                <p id="taux-soumission" class="text-3xl font-bold">{{ submit_rate }}%</p>
+                <p id="taux-soumission" class="text-3xl font-bold">{{ submit_rate_global }}%</p>
             </div>
         </div>
 
@@ -175,28 +175,34 @@
                 }]
             },
             options: {
-                scales: { y: { beginAtZero: true } },
-                animation: {
-                    duration: 1500,
-                    easing: 'easeOutBounce'
+                responsive: true,
+                plugins: {
+                    datalabels: {
+                        color: 'white',
+                        font: {
+                            weight: 'bold'
+                        },
+                        align: 'top',
+                        anchor: 'end'
+                    }
                 }
             }
         });
 
-        // Mise à jour des données par intervalles
-        setInterval(() => {
-            fetch('/get_stats')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('emails-envoyes').innerText = data.total_sent;
-                    document.getElementById('emails-ouverts').innerText = data.total_clicked;
-                    document.getElementById('identifiants-captures').innerText = data.total_submitted;
-                    document.getElementById('taux-clic').innerText = data.click_rate.toFixed(2) + '%';
-                    document.getElementById('taux-soumission').innerText = data.submit_rate.toFixed(2) + '%';
-                    emailChart.data.datasets[0].data = [data.total_sent, data.total_clicked, data.total_submitted];
-                    emailChart.update();
-                });
-        }, 30000); // Mettez à jour toutes les 30 secondes
+        // Fonction pour générer un PDF
+        document.getElementById('generate-pdf').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.text('Rapport de Test Phishing - Regence', 20, 20);
+            doc.text('Statistiques:', 20, 30);
+            doc.text('Emails envoyés: ' + '{{ total_sent }}', 20, 40);
+            doc.text('Liens cliqués: ' + '{{ total_clicked }}', 20, 50);
+            doc.text('Identifiants capturés: ' + '{{ total_submitted }}', 20, 60);
+            doc.text('Taux de clic global: ' + '{{ click_rate_global }}%', 20, 70);
+            doc.text('Taux de soumission global: ' + '{{ submit_rate_global }}%', 20, 80);
+            doc.save('rapport_phishing_regence.pdf');
+        });
     </script>
 </body>
 

@@ -51,13 +51,26 @@
             </div>
         </div>
 
-        <div class="mb-8">
-            <canvas id="emailChart" width="400" height="200"></canvas>
+        <!-- Statistiques Globales en pourcentage -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Taux de clic global -->
+            <div class="p-6 bg-green-50 dark:bg-green-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-green-600 dark:text-white flex items-center">
+                    <i class="fa fa-chart-pie mr-2 text-green-500"></i>Taux de clics global
+                </h3>
+                <p id="taux-clic" class="text-3xl font-bold">{{ click_rate }}%</p>
+            </div>
+            <!-- Taux de soumission global -->
+            <div class="p-6 bg-blue-50 dark:bg-blue-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-blue-600 dark:text-white flex items-center">
+                    <i class="fa fa-chart-line mr-2 text-blue-500"></i>Taux de soumission global
+                </h3>
+                <p id="taux-soumission" class="text-3xl font-bold">{{ submit_rate }}%</p>
+            </div>
         </div>
 
-        <!-- Graphique circulaire -->
         <div class="mb-8">
-            <canvas id="clickPie" width="250" height="250"></canvas>
+            <canvas id="emailChart" width="400" height="200"></canvas>
         </div>
 
         <h2 class="text-2xl font-semibold text-center mt-6 mb-4 text-indigo-600 dark:text-indigo-400">📌 Statistiques par utilisateur</h2>
@@ -104,6 +117,8 @@
                 <li><strong>Emails envoyés :</strong> Nombre total d'emails envoyés.</li>
                 <li><strong>Liens cliqués :</strong> Nombre de liens cliqués par les utilisateurs.</li>
                 <li><strong>Identifiants capturés :</strong> Nombre d'utilisateurs ayant soumis leurs identifiants.</li>
+                <li><strong>Taux de clic global :</strong> Pourcentage d'emails avec liens cliqués.</li>
+                <li><strong>Taux de soumission global :</strong> Pourcentage d'emails avec identifiants soumis.</li>
             </ul>
         </div>
 
@@ -134,6 +149,8 @@
                             document.getElementById('emails-envoyes').innerText = '0';
                             document.getElementById('emails-ouverts').innerText = '0';
                             document.getElementById('identifiants-captures').innerText = '0';
+                            document.getElementById('taux-clic').innerText = '0%';
+                            document.getElementById('taux-soumission').innerText = '0%';
                             emailChart.data.datasets[0].data = [0, 0, 0];
                             emailChart.update();
                             alert("Statistiques réinitialisées !");
@@ -166,97 +183,18 @@
             }
         });
 
-        // Graphique circulaire (réajusté avec pourcentage)
-        const pieCtx = document.getElementById('clickPie').getContext('2d');
-        const clickRate = {{ total_clicked }} / {{ total_sent }} * 100;
-        const pieChart = new Chart(pieCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Non cliqués', 'Cliqués'],
-                datasets: [{
-                    data: [100 - clickRate, clickRate],
-                    backgroundColor: ['#D1D5DB', '#F59E0B'],
-                    borderColor: ['#F57C00', '#F59E0B']
-                }]
-            },
-            options: {
-                animation: {
-                    animateRotate: true,
-                    animateScale: true
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                let percentage = tooltipItem.raw.toFixed(2) + '%';
-                                return tooltipItem.label + ': ' + percentage;
-                            }
-                        }
-                    },
-                    datalabels: {
-                        formatter: function(value, ctx) {
-                            let sum = 0;
-                            let dataArr = ctx.chart.data.datasets[0].data;
-                            dataArr.map(data => {
-                                sum += data;
-                            });
-                            let percentage = (value / sum * 100).toFixed(2) + '%';
-                            return percentage;
-                        },
-                        color: 'white',
-                        font: {
-                            weight: 'bold',
-                            size: 16
-                        }
-                    }
-                }
-            }
-        });
-
-        // Générer le PDF avec recommandations
-        document.getElementById('generate-pdf').addEventListener('click', function () {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Titre principal
-            doc.setFontSize(18);
-            doc.setTextColor(0, 0, 255);
-            doc.text("Rapport Test - Phishing Regence", 105, 20, null, null, 'center');
-
-            // Statistiques
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text("📊 Statistiques :", 20, 40);
-            doc.text("Emails envoyés: " + document.getElementById('emails-envoyes').innerText, 20, 50);
-            doc.text("Liens cliqués: " + document.getElementById('emails-ouverts').innerText, 20, 60);
-            doc.text("Identifiants capturés: " + document.getElementById('identifiants-captures').innerText, 20, 70);
-
-            // Recommandations
-            doc.setFontSize(14);
-            doc.setTextColor(255, 165, 0); // Couleur orange pour attirer l'attention
-            doc.text("📌 Recommandations :", 20, 90);
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text("1. Formation continue : Il est essentiel de former régulièrement les employés à la cybersécurité.", 20, 100);
-            doc.text("2. Analyse des emails : Encouragez les employés à toujours analyser les emails suspects.", 20, 110);
-            doc.text("3. Mise à jour des mots de passe : Après avoir cliqué sur un lien suspect, modifiez immédiatement vos mots de passe.", 20, 120);
-            doc.text("4. Phishing simulé : Organisez des tests de phishing réguliers pour évaluer la sensibilisation des employés.", 20, 130);
-
-            // Enregistrer le PDF
-            doc.save("rapport_phishing.pdf");
-        });
-
+        // Mise à jour des données par intervalles
         setInterval(() => {
-            fetch("/get_stats")
+            fetch('/get_stats')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('emails-envoyes').innerText = data.total_sent;
                     document.getElementById('emails-ouverts').innerText = data.total_clicked;
                     document.getElementById('identifiants-captures').innerText = data.total_submitted;
+                    document.getElementById('taux-clic').innerText = data.click_rate.toFixed(2) + '%';
+                    document.getElementById('taux-soumission').innerText = data.submit_rate.toFixed(2) + '%';
                     emailChart.data.datasets[0].data = [data.total_sent, data.total_clicked, data.total_submitted];
                     emailChart.update();
-                    pieChart.data.datasets[0].data = [100 - data.click_rate, data.click_rate];
-                    pieChart.update();
                 });
         }, 30000); // Mettez à jour toutes les 30 secondes
     </script>

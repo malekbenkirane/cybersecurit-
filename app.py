@@ -99,14 +99,17 @@ def send_email(recipient_email, recipient_name, phishing_link):
 @app.route("/track_open")
 def track_open():
     email = request.args.get("email")
-    next_url = request.args.get("next", "https://outlook.com")  # URL de redirection par défaut
+    next_url = request.args.get("next", "https://outlook.com")
 
     if email:
-        # Enregistrez l'événement "lien cliqué" et associez-le à l'utilisateur
-        db.session.add(Interaction(email=email, event_type="lien cliqué"))
-        db.session.commit()
-    
-    return redirect(next_url)  # Redirige l'utilisateur vers la page cible
+        # Vérifier si un clic a déjà été enregistré pour cet email
+        existing_click = Interaction.query.filter_by(email=email, event_type="lien cliqué").first()
+        if not existing_click:
+            db.session.add(Interaction(email=email, event_type="lien cliqué"))
+            db.session.commit()
+
+    return redirect(next_url)
+
 
     
 @app.route("/reset_stats", methods=["POST"])
@@ -127,13 +130,17 @@ def reset_stats():
 @app.route("/capture", methods=["POST"])
 def capture():
     email = request.form.get("email")
-    password = request.form.get("password")  # Juste pour la simulation, ne l'affiche pas !
-    
+    password = request.form.get("password")
+
     if email:
-        db.session.add(Interaction(email=email, event_type="formulaire soumis"))
-        db.session.commit()
-    
-    return redirect("https://outlook.com")  # Rediriger l'utilisateur après soumission
+        # Vérifier si un formulaire a déjà été soumis pour cet email
+        existing_submit = Interaction.query.filter_by(email=email, event_type="formulaire soumis").first()
+        if not existing_submit:
+            db.session.add(Interaction(email=email, event_type="formulaire soumis"))
+            db.session.commit()
+
+    return redirect("https://outlook.com")
+
 
 @app.route("/")
 def home():
@@ -320,6 +327,52 @@ def user_stats(user_email):
                            total_submitted=total_submitted,
                            explanation=explanation)
                            
+                         
+
+@app.route("/generate_pdf")
+def generate_pdf():
+    if not session.get("logged_in"):
+        return redirect("/stats")
+
+    # Créer le PDF
+    pdf = FPDF()
+    pdf.add_page()
+
+    # Titre
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, txt="Rapport de Phishing - Statistiques", ln=True, align="C")
+
+    # Statistiques globales
+    total_sent = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="email envoyé").scalar() or 0
+    total_clicked = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="lien cliqué").scalar() or 0
+    total_submitted = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="formulaire soumis").scalar() or 0
+
+    # Ajouter les statistiques au PDF
+    pdf.ln(10)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Emails envoyés: {total_sent}", ln=True)
+    pdf.cell(200, 10, txt=f"Liens cliqués: {total_clicked}", ln=True)
+    pdf.cell(200, 10, txt=f"Formulaires soumis: {total_submitted}", ln=True)
+
+    # Ajouter des détails supplémentaires (par utilisateur, si nécessaire)
+    user_stats = db.session.query(
+        Interaction.email,
+        db.func.count(Interaction.id).filter(Interaction.event_type == "email envoyé").label("sent"),
+        db.func.count(Interaction.id).filter(Interaction.event_type == "lien cliqué").label("clicked"),
+        db.func.count(Interaction.id).filter(Interaction.event_type == "formulaire soumis").label("submitted"),
+    ).group_by(Interaction.email).all()
+
+    pdf.ln(10)
+    pdf.cell(200, 10, txt="Détails par utilisateur:", ln=True)
+    for user in user_stats:
+        email, sent, clicked, submitted = user
+        pdf.cell(200, 10, txt=f"{email} - Emails envoyés: {sent}, Liens cliqués: {clicked}, Formulaires soumis: {submitted}", ln=True)
+
+    # Sauvegarder le fichier PDF dans un dossier temporaire
+    pdf_output = "/tmp/phishing_report.pdf"
+    pdf.output(pdf_output)
+
+    return send_file(pdf_output, as_attachment=True, download_name="phishing_report.pdf", mimetype="application/pdf")                         
 @app.route("/get_stats")
 def get_stats():
     if not session.get("logged_in"):

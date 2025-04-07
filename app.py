@@ -372,7 +372,24 @@ def generate_pdf():
     pdf_output = "/tmp/phishing_report.pdf"
     pdf.output(pdf_output)
 
-    return send_file(pdf_output, as_attachment=True, download_name="phishing_report.pdf", mimetype="application/pdf")                         
+    return send_file(pdf_output, as_attachment=True, download_name="phishing_report.pdf", mimetype="application/pdf")
+
+# Créer un graphique en temps réel
+def generate_live_chart():
+    total_sent = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="email envoyé").scalar() or 0
+    total_clicked = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="lien cliqué").scalar() or 0
+    total_submitted = db.session.query(db.func.count(Interaction.id)).filter_by(event_type="formulaire soumis").scalar() or 0
+
+    values = [total_sent, total_clicked, total_submitted]
+    labels = ["Emails envoyés", "Liens cliqués", "Formulaires soumis"]
+    
+    plt.figure(figsize=(8, 6))
+    plt.bar(labels, values, color=["blue", "orange", "green"])
+    plt.title("Statistiques en temps réel")
+    plt.xlabel("Types d'actions")
+    plt.ylabel("Nombre d'interactions")
+    plt.savefig("static/live_stats.png")  # Sauvegarde de l'image du graphique
+    
 @app.route("/get_stats")
 def get_stats():
     if not session.get("logged_in"):

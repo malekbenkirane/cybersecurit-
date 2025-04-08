@@ -8,19 +8,18 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
     <div class="container mx-auto my-8 p-8 bg-white dark:bg-gray-800 shadow-xl rounded-xl">
         <div class="relative">
-            <!-- Boutons PDF et réinitialisation -->
-            <button id="generate-pdf"
-                class="absolute top-0 left-0 mt-4 mr-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
-                <i class="fa fa-file-pdf mr-2"></i>Générer PDF
-            </button>
+            <!-- Logo Régence à gauche -->
+            <div class="absolute top-0 left-0 mt-0 ml-0">
+                <img src="https://www.regence.ca/templates/regence/images/logo.png" alt="Logo Régence" class="h-12">
+            </div>
 
+            <!-- Bouton de réinitialisation -->
             <button id="reset-stats"
                 class="absolute top-0 right-0 mt-4 mr-2 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
                 <i class="fa fa-refresh mr-2"></i>Réinitialiser les statistiques
@@ -51,16 +50,14 @@
             </div>
         </div>
 
-        <!-- Statistiques Globales en pourcentage -->
+        <!-- Taux globaux -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Taux de clic global -->
             <div class="p-6 bg-green-50 dark:bg-green-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
                 <h3 class="text-xl font-semibold text-green-600 dark:text-white flex items-center">
                     <i class="fa fa-chart-pie mr-2 text-green-500"></i>Taux de clics global
                 </h3>
                 <p id="taux-clic" class="text-3xl font-bold">{{ click_rate_global }}%</p>
             </div>
-            <!-- Taux de soumission global -->
             <div class="p-6 bg-blue-50 dark:bg-blue-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
                 <h3 class="text-xl font-semibold text-blue-600 dark:text-white flex items-center">
                     <i class="fa fa-chart-line mr-2 text-blue-500"></i>Taux de soumission global
@@ -138,7 +135,6 @@
     </div>
 
     <script>
-        // Logique pour réinitialiser les stats
         const resetButton = document.getElementById('reset-stats');
         resetButton.addEventListener('click', function () {
             if (confirm("Voulez-vous vraiment réinitialiser les statistiques ?")) {
@@ -160,7 +156,6 @@
             }
         });
 
-        // Graphique des emails envoyés
         var ctx = document.getElementById('emailChart').getContext('2d');
         var emailChart = new Chart(ctx, {
             type: 'bar',
@@ -179,31 +174,17 @@
                 plugins: {
                     datalabels: {
                         color: 'white',
-                        font: {
-                            weight: 'bold'
-                        },
+                        font: { weight: 'bold' },
                         align: 'top',
                         anchor: 'end'
                     }
                 }
             }
         });
-
-        // Fonction pour générer un PDF
-        document.getElementById('generate-pdf').addEventListener('click', function () {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.text('Rapport de Test Phishing - Regence', 20, 20);
-            doc.text('Statistiques:', 20, 30);
-            doc.text('Emails envoyés: ' + '{{ total_sent }}', 20, 40);
-            doc.text('Liens cliqués: ' + '{{ total_clicked }}', 20, 50);
-            doc.text('Identifiants capturés: ' + '{{ total_submitted }}', 20, 60);
-            doc.text('Taux de clic global: ' + '{{ click_rate_global }}%', 20, 70);
-            doc.text('Taux de soumission global: ' + '{{ submit_rate_global }}%', 20, 80);
-            doc.save('rapport_phishing_regence.pdf');
-        });
     </script>
 </body>
-
+<!-- Pied de page -->
+<footer class="text-center mt-12 text-gray-500 dark:text-gray-400 text-sm">
+    <p>© 2025 Chaussures Régence Inc. - Tous droits réservés</p>
+</footer>
 </html>

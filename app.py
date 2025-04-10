@@ -1,5 +1,6 @@
 ﻿from flask import Flask, render_template, request, redirect, session, send_file, jsonify
-
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 import os
 import smtplib
@@ -10,9 +11,37 @@ import urllib.parse
 from datetime import datetime
 from sqlalchemy import func
 
+from dotenv import load_dotenv
+import os
 
-app = Flask(__name__)
-app.secret_key = "supersecretkey"
+load_dotenv()  # Charge les variables d’environnement
+
+app = Flask(__name__)  # ← Définir app AVANT de l’utiliser
+
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")  # ← Optionnellement tu peux ajouter une valeur par défaut
+
+# Config Mail, DB etc...
+app.config.update(
+    MAIL_SERVER=os.getenv("MAIL_SERVER"),
+    MAIL_PORT=int(os.getenv("MAIL_PORT", "587")),
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+    MAIL_USE_TLS=True,
+    MAIL_USE_SSL=False
+)
+
+
+# Utilisation des variables d'environnement
+MAIL_USERNAME = os.getenv("MAIL_USERNAME")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+SID = os.getenv("SID")
+
+# Hacher le mot de passe de l'admin au démarrage
+ADMIN_PASSWORD_HASH = generate_password_hash("Saouda2025!!")
+
 
 # Configuration de la base de données SQLite
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///phishing_data.db"
@@ -152,7 +181,7 @@ def login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
             session["logged_in"] = True
             return redirect("/send_email")  # Si l'utilisateur est authentifié, rediriger vers la page d'envoi d'email
         return "Accès refusé", 401  # Si les identifiants sont incorrects
@@ -172,15 +201,19 @@ def send_email_route():
         # Vérifier si un fichier CSV est téléchargé
         file = request.files.get("csv_file")
         if file and file.filename.endswith('.csv'):
+            # Créer le répertoire 'uploads' si nécessaire
+            upload_folder = 'uploads'
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+
             # Sauvegarder le fichier CSV
             filename = secure_filename(file.filename)
-            file_path = os.path.join("uploads", filename)
+            file_path = os.path.join(upload_folder, filename)
             file.save(file_path)
 
             # Lire les emails et noms depuis le fichier CSV
             try:
                 with open(file_path, mode="r", newline="", encoding="utf-8") as csvfile:
-
                     reader = csv.reader(csvfile)
                     next(reader)  # Ignorer l'entête du fichier CSV
 
@@ -190,8 +223,7 @@ def send_email_route():
                         if len(row) >= 2:  # Vérifier qu'il y a au moins un email et un nom
                             recipient_email = row[0].strip()
                             recipient_name = row[1].strip()
-                            send_email(recipient_email, recipient_name)
-
+                            send_email(recipient_email, recipient_name, phishing_link)
 
                     return f"Emails envoyés avec succès à tous les destinataires du fichier CSV."
             except Exception as e:
@@ -209,6 +241,7 @@ def send_email_route():
         return "Erreur : Email ou Nom manquant.", 400
 
     return render_template("send_email.html")  # Page pour envoyer un email
+
 
 
 # Route pour afficher le formulaire de login pour accéder aux statistiques
@@ -417,5 +450,3 @@ def get_stats():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
-

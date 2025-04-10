@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -7,53 +7,72 @@
     <title>Tableau de Bord - Statistiques Phishing</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gradient-to-r from-indigo-50 to-indigo-100 text-gray-900">
-
-    <div class="container mx-auto my-8 p-8 bg-white shadow-xl rounded-xl">
-        <!-- Bouton de réinitialisation -->
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+    <div class="container mx-auto my-8 p-8 bg-white dark:bg-gray-800 shadow-xl rounded-xl">
         <div class="relative">
-            <button id="reset-stats" 
-                    class="absolute top-0 right-0 mt-4 mr-4 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
+            <!-- Logo Régence à gauche -->
+            <div class="absolute top-0 left-0 mt-0 ml-0">
+                <img src="https://www.regence.ca/templates/regence/images/logo.png" alt="Logo Régence" class="h-12">
+            </div>
+
+            <!-- Bouton de réinitialisation -->
+            <button id="reset-stats"
+                class="absolute top-0 right-0 mt-4 mr-2 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105">
                 <i class="fa fa-refresh mr-2"></i>Réinitialiser les statistiques
             </button>
         </div>
 
-        <h1 class="text-4xl font-semibold text-center mb-6 text-indigo-600">📊 Rapport de Test - Phishing Regence</h1>
+        <h1 class="text-4xl font-semibold text-center mb-6 text-indigo-600 dark:text-indigo-400">📊 Rapport Test - Phishing Regence</h1>
 
-        <!-- Statistiques générales -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="p-6 bg-indigo-50 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
-                <h3 class="text-xl font-semibold text-indigo-600 flex items-center">
+            <!-- Statistiques -->
+            <div class="p-6 bg-indigo-50 dark:bg-indigo-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-indigo-600 dark:text-white flex items-center">
                     <i class="fa fa-envelope mr-2 text-indigo-500"></i>Emails envoyés
                 </h3>
                 <p id="emails-envoyes" class="text-3xl font-bold">{{ total_sent }}</p>
             </div>
-            <div class="p-6 bg-yellow-50 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
-                <h3 class="text-xl font-semibold text-yellow-600 flex items-center">
+            <div class="p-6 bg-yellow-50 dark:bg-yellow-600 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-yellow-600 dark:text-white flex items-center">
                     <i class="fa fa-link mr-2 text-yellow-500"></i>Liens cliqués
                 </h3>
                 <p id="emails-ouverts" class="text-3xl font-bold">{{ total_clicked }}</p>
             </div>
-            <div class="p-6 bg-red-50 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
-                <h3 class="text-xl font-semibold text-red-600 flex items-center">
+            <div class="p-6 bg-red-50 dark:bg-red-600 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-red-600 dark:text-white flex items-center">
                     <i class="fa fa-key mr-2 text-red-500"></i>Identifiants capturés
                 </h3>
                 <p id="identifiants-captures" class="text-3xl font-bold">{{ total_submitted }}</p>
             </div>
         </div>
 
-        <!-- Graphiques -->
+        <!-- Taux globaux -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+            <div class="p-6 bg-green-50 dark:bg-green-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-green-600 dark:text-white flex items-center">
+                    <i class="fa fa-chart-pie mr-2 text-green-500"></i>Taux de clics global
+                </h3>
+                <p id="taux-clic" class="text-3xl font-bold">{{ click_rate_global }}%</p>
+            </div>
+            <div class="p-6 bg-blue-50 dark:bg-blue-700 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105 duration-300">
+                <h3 class="text-xl font-semibold text-blue-600 dark:text-white flex items-center">
+                    <i class="fa fa-chart-line mr-2 text-blue-500"></i>Taux de soumission global
+                </h3>
+                <p id="taux-soumission" class="text-3xl font-bold">{{ submit_rate_global }}%</p>
+            </div>
+        </div>
+
         <div class="mb-8">
             <canvas id="emailChart" width="400" height="200"></canvas>
         </div>
 
-        <!-- 🆕 Tableau des statistiques par utilisateur -->
-        <h2 class="text-2xl font-semibold text-center mt-6 mb-4 text-indigo-600">📌 Statistiques par utilisateur</h2>
+        <h2 class="text-2xl font-semibold text-center mt-6 mb-4 text-indigo-600 dark:text-indigo-400">📌 Statistiques par utilisateur</h2>
         <div class="overflow-x-auto shadow-md rounded-xl border border-gray-200">
-            <table class="min-w-full bg-white rounded-xl">
+            <table class="min-w-full bg-white dark:bg-gray-800 rounded-xl">
                 <thead class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white">
                     <tr>
                         <th class="py-3 px-4 text-left">Email</th>
@@ -62,51 +81,62 @@
                         <th class="py-3 px-4 text-center">Capturés</th>
                         <th class="py-3 px-4 text-center">Taux de clic</th>
                         <th class="py-3 px-4 text-center">Taux de soumission</th>
-                        <th class="py-3 px-4 text-center">Date de l'action</th> <!-- Nouvelle colonne pour la date -->
+                        <th class="py-3 px-4 text-center">Date de l'action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in user_data %}
-                    <tr class="border-t hover:bg-gray-50 transition-all duration-300">
+                    <tr class="border-t hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
                         <td class="py-3 px-4">{{ user.email }}</td>
                         <td class="py-3 px-4 text-center">{{ user.sent }}</td>
                         <td class="py-3 px-4 text-center">{{ user.clicked }}</td>
                         <td class="py-3 px-4 text-center">{{ user.submitted }}</td>
                         <td class="py-3 px-4 text-center">
                             <div class="relative w-full bg-gray-200 rounded-full h-4">
-                                <div class="absolute top-0 left-0 h-full bg-yellow-400 rounded-full" style="width: {{ user.click_rate }}%;">
-                                    <span class="absolute right-1 text-xs text-black font-bold">{{ user.click_rate }}%</span>
-                                </div>
+                                <div class="absolute top-0 left-0 h-full bg-yellow-400 rounded-full" style="width: {{ user.click_rate }}%;"></div>
                             </div>
                         </td>
                         <td class="py-3 px-4 text-center">
                             <div class="relative w-full bg-gray-200 rounded-full h-4">
-                                <div class="absolute top-0 left-0 h-full bg-green-500 rounded-full" style="width: {{ user.submit_rate }}%;">
-                                    <span class="absolute right-1 text-xs text-black font-bold">{{ user.submit_rate }}%</span>
-                                </div>
+                                <div class="absolute top-0 left-0 h-full bg-green-500 rounded-full" style="width: {{ user.submit_rate }}%;"></div>
                             </div>
                         </td>
-                        <td class="py-3 px-4 text-center">{{ user.action_date if user.action_date != 'Date non disponible' else 'Aucune action' }}</td> <!-- Affichage de la date -->
-
+                        <td class="py-3 px-4 text-center">{{ user.action_date if user.action_date != 'Date non disponible' else 'Aucune action' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- Explications -->
-        <div class="bg-gray-100 p-6 rounded-lg shadow mt-6">
-            <h2 class="text-xl font-semibold mb-4 text-indigo-600">📝 Explications des Statistiques</h2>
+        <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow mt-6">
+            <h2 class="text-xl font-semibold mb-4 text-indigo-600 dark:text-indigo-300">📝 Explications des Statistiques</h2>
             <ul class="list-disc pl-6">
                 <li><strong>Emails envoyés :</strong> Nombre total d'emails envoyés.</li>
                 <li><strong>Liens cliqués :</strong> Nombre de liens cliqués par les utilisateurs.</li>
                 <li><strong>Identifiants capturés :</strong> Nombre d'utilisateurs ayant soumis leurs identifiants.</li>
+                <li><strong>Taux de clic global :</strong> Pourcentage d'emails avec liens cliqués.</li>
+                <li><strong>Taux de soumission global :</strong> Pourcentage d'emails avec identifiants soumis.</li>
+            </ul>
+        </div>
+
+        <div class="mt-8 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+            <p>⚠️ Nous recommandons une formation de sensibilisation pour les utilisateurs ayant soumis leurs identifiants.</p>
+        </div>
+
+        <div class="mt-8 p-6 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
+            <p>🎯 <strong>Recommandations supplémentaires :</strong></p>
+            <ul class="list-disc pl-6">
+                <li><strong>Formation continue :</strong> Il est essentiel de former régulièrement les employés à la cybersécurité.</li>
+                <li><strong>Analyse des emails :</strong> Encouragez les employés à toujours analyser les emails suspects et à vérifier les adresses d'expéditeur.</li>
+                <li><strong>Mise à jour des mots de passe :</strong> Après avoir cliqué sur un lien suspect, modifiez immédiatement vos mots de passe pour prévenir les risques.</li>
+                <li><strong>Phishing simulé :</strong> Organisez des tests de phishing réguliers pour évaluer le niveau de sensibilisation des employés.</li>
             </ul>
         </div>
     </div>
 
     <script>
-        document.getElementById('reset-stats').addEventListener('click', function () {
+        const resetButton = document.getElementById('reset-stats');
+        resetButton.addEventListener('click', function () {
             if (confirm("Voulez-vous vraiment réinitialiser les statistiques ?")) {
                 fetch('/reset_stats', { method: 'POST' })
                     .then(response => response.json())
@@ -115,6 +145,8 @@
                             document.getElementById('emails-envoyes').innerText = '0';
                             document.getElementById('emails-ouverts').innerText = '0';
                             document.getElementById('identifiants-captures').innerText = '0';
+                            document.getElementById('taux-clic').innerText = '0%';
+                            document.getElementById('taux-soumission').innerText = '0%';
                             emailChart.data.datasets[0].data = [0, 0, 0];
                             emailChart.update();
                             alert("Statistiques réinitialisées !");
@@ -124,7 +156,6 @@
             }
         });
 
-        // Graphique avec Chart.js
         var ctx = document.getElementById('emailChart').getContext('2d');
         var emailChart = new Chart(ctx, {
             type: 'bar',
@@ -139,25 +170,21 @@
                 }]
             },
             options: {
-                scales: { y: { beginAtZero: true } }
+                responsive: true,
+                plugins: {
+                    datalabels: {
+                        color: 'white',
+                        font: { weight: 'bold' },
+                        align: 'top',
+                        anchor: 'end'
+                    }
+                }
             }
         });
-
-        // Mise à jour des stats toutes les 5 secondes
-        setInterval(() => {
-            fetch("/get_stats")
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('emails-envoyes').innerText = data.sent;
-                    document.getElementById('emails-ouverts').innerText = data.clicked;
-                    document.getElementById('identifiants-captures').innerText = data.submitted;
-                    emailChart.data.datasets[0].data = [data.sent, data.clicked, data.submitted];
-                    emailChart.update();
-                })
-                .catch(error => console.error("Erreur de mise à jour :", error));
-        }, 5000);
     </script>
-
 </body>
-
+<!-- Pied de page -->
+<footer class="text-center mt-12 text-gray-500 dark:text-gray-400 text-sm">
+    <p>© 2025 Chaussures Régence Inc. - Tous droits réservés</p>
+</footer>
 </html>
